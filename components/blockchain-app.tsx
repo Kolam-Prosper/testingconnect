@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 
 export default function BlockchainApp() {
-  const [account, setAccount] = useState<string | null>(null)
-  const [balance, setBalance] = useState<string>('')
-  const [chainId, setChainId] = useState<number | null>(null)
-  const [networkName, setNetworkName] = useState<string>('')
+  const [account, setAccount] = useState(null)
+  const [balance, setBalance] = useState('')
+  const [chainId, setChainId] = useState(null)
+  const [networkName, setNetworkName] = useState('')
   const [isConnecting, setIsConnecting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState(null)
 
   // Get network name from chain ID
   useEffect(() => {
@@ -31,28 +31,23 @@ export default function BlockchainApp() {
     setIsConnecting(true)
     
     try {
-      // Check if MetaMask is installed
       if (typeof window === 'undefined' || !window.ethereum) {
         throw new Error('Please install MetaMask or another Ethereum wallet')
       }
       
-      // Request account access
       const provider = new ethers.BrowserProvider(window.ethereum)
       const accounts = await provider.send('eth_requestAccounts', [])
       const network = await provider.getNetwork()
       
-      // Set state with account info
       setAccount(accounts[0])
       setChainId(Number(network.chainId))
       
-      // Get account balance
       const balance = await provider.getBalance(accounts[0])
       setBalance(ethers.formatEther(balance))
       
-      // Setup listeners for account and chain changes
       window.ethereum.on('accountsChanged', handleAccountsChanged)
       window.ethereum.on('chainChanged', handleChainChanged)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error connecting wallet:', err)
       setError(err.message || 'Failed to connect wallet')
     } finally {
@@ -67,7 +62,6 @@ export default function BlockchainApp() {
     setChainId(null)
     setNetworkName('')
     
-    // Remove listeners
     if (typeof window !== 'undefined' && window.ethereum) {
       window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
       window.ethereum.removeListener('chainChanged', handleChainChanged)
@@ -75,7 +69,7 @@ export default function BlockchainApp() {
   }
 
   // Handle account changes
-  const handleAccountsChanged = (accounts: string[]) => {
+  const handleAccountsChanged = (accounts) => {
     if (accounts.length === 0) {
       disconnectWallet()
     } else {
@@ -85,7 +79,7 @@ export default function BlockchainApp() {
   }
 
   // Handle chain changes
-  const handleChainChanged = (chainIdHex: string) => {
+  const handleChainChanged = (chainIdHex) => {
     setChainId(Number(chainIdHex))
     if (account) {
       updateBalance(account)
@@ -93,7 +87,7 @@ export default function BlockchainApp() {
   }
 
   // Update balance helper
-  const updateBalance = async (address: string) => {
+  const updateBalance = async (address) => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum)
@@ -107,8 +101,8 @@ export default function BlockchainApp() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold mb-4 text-center dark:text-white">Blockchain Dapp</h1>
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h1 className="text-2xl font-bold mb-4 text-center">Blockchain Dapp</h1>
         
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -136,22 +130,22 @@ export default function BlockchainApp() {
         </div>
         
         {account && (
-          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-4 dark:text-white">Wallet Information</h2>
+          <div className="bg-gray-100 rounded-lg p-4">
+            <h2 className="text-xl font-semibold mb-4">Wallet Information</h2>
             
             <div className="mb-2">
-              <span className="font-medium dark:text-white">Address:</span>
-              <div className="break-all text-sm mt-1 dark:text-gray-300">{account}</div>
+              <span className="font-medium">Address:</span>
+              <div className="break-all text-sm mt-1">{account}</div>
             </div>
             
             <div className="mb-2">
-              <span className="font-medium dark:text-white">Network:</span>
-              <div className="mt-1 dark:text-gray-300">{networkName}</div>
+              <span className="font-medium">Network:</span>
+              <div className="mt-1">{networkName}</div>
             </div>
             
             <div>
-              <span className="font-medium dark:text-white">Balance:</span>
-              <div className="mt-1 dark:text-gray-300">
+              <span className="font-medium">Balance:</span>
+              <div className="mt-1">
                 {balance ? `${parseFloat(balance).toFixed(4)} ETH` : 'Loading...'}
               </div>
             </div>
