@@ -11,57 +11,19 @@ export default function BlockchainApp() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Add this function to switch to Unichain Sepolia
-  const switchToUnichainSepolia = async () => {
-    if (!window.ethereum) return;
-    
-    try {
-      // Try to switch to the network
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x515' }], // 0x515 is hex for 1301
-      });
-    } catch (error: any) {
-      // This error code means the chain hasn't been added to MetaMask
-      if (error.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: '0x515', // 1301 in hex
-                chainName: 'Unichain Sepolia',
-                nativeCurrency: {
-                  name: 'ETH',
-                  symbol: 'ETH',
-                  decimals: 18
-                },
-                rpcUrls: ['https://sepolia.unichain.org'],
-                blockExplorerUrls: ['https://sepolia.uniscan.xyz/']
-              },
-            ],
-          });
-        } catch (addError) {
-          console.error("Error adding chain:", addError);
-        }
-      }
-      console.error("Error switching chain:", error);
-    }
-  };
-
   // Get network name from chain ID
   useEffect(() => {
     if (chainId) {
       switch (chainId) {
-        case 1: setNetworkName('Ethereum Mainnet'); break;
-        case 11155111: setNetworkName('Sepolia Testnet'); break;
-        case 1301: setNetworkName('Unichain Sepolia'); break; // Updated name
-        default: setNetworkName(`Chain ID: ${chainId}`);
+        case 1: setNetworkName('Ethereum Mainnet'); break
+        case 11155111: setNetworkName('Sepolia Testnet'); break
+        case 1301: setNetworkName('Unichain Sepolia'); break
+        default: setNetworkName(`Chain ID: ${chainId}`)
       }
     } else {
-      setNetworkName('');
+      setNetworkName('')
     }
-  }, [chainId]);
+  }, [chainId])
 
   // Connect wallet function
   const connectWallet = async () => {
@@ -173,17 +135,6 @@ export default function BlockchainApp() {
           )}
         </div>
         
-        {account && chainId !== 1301 && (
-          <div className="mt-4 mb-4">
-            <button
-              onClick={switchToUnichainSepolia}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
-            >
-              Switch to Unichain Sepolia
-            </button>
-          </div>
-        )}
-        
         {account && (
           <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
             <h2 className="text-xl font-semibold mb-4 dark:text-white">Wallet Information</h2>
@@ -206,9 +157,7 @@ export default function BlockchainApp() {
             </div>
           </div>
         )}
-        
-        {account && (
-          <div className="mt-4">
-            <div className={`p-2 rounded ${chainId === 1301 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-              {chainId === 1301 
-                ? 
+      </div>
+    </div>
+  )
+}
