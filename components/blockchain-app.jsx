@@ -1,103 +1,109 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { ethers } from 'ethers'
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 
-export default function BlockchainApp() {
-  const [account, setAccount] = useState(null)
-  const [balance, setBalance] = useState('')
-  const [chainId, setChainId] = useState(null)
-  const [networkName, setNetworkName] = useState('')
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [error, setError] = useState(null)
+declare global {
+  interface Window {
+    ethereum?: {
+      isMetaMask?: boolean;
+      request: (request: { method: string; params?: any[] }) => Promise<any>;
+      on: (event: string, listener: (...args: any[]) => void) => void;
+      removeListener: (event: string, listener: (...args: any[]) => void) => void;
+      send: (method: string, params?: any[]) => Promise<any>;
+    };
+  }
+}
 
-  // Get network name from chain ID
+export default function BlockchainApp(): React.ReactElement {
+  const [account, setAccount] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string>('');
+  const [chainId, setChainId] = useState<number | null>(null);
+  const [networkName, setNetworkName] = useState<string>('');
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (chainId) {
       switch (chainId) {
-        case 1: setNetworkName('Ethereum Mainnet'); break
-        case 11155111: setNetworkName('Sepolia Testnet'); break
-        case 1301: setNetworkName('Unichain Sepolia'); break
-        default: setNetworkName(`Chain ID: ${chainId}`)
+        case 1: setNetworkName('Ethereum Mainnet'); break;
+        case 11155111: setNetworkName('Sepolia Testnet'); break;
+        case 1301: setNetworkName('Unichain Sepolia'); break;
+        default: setNetworkName(`Chain ID: ${chainId}`);
       }
     } else {
-      setNetworkName('')
+      setNetworkName('');
     }
-  }, [chainId])
+  }, [chainId]);
 
-  // Connect wallet function
-  const connectWallet = async () => {
-    setError(null)
-    setIsConnecting(true)
+  const connectWallet = async (): Promise<void> => {
+    setError(null);
+    setIsConnecting(true);
     
     try {
       if (typeof window === 'undefined' || !window.ethereum) {
-        throw new Error('Please install MetaMask or another Ethereum wallet')
+        throw new Error('Please install MetaMask or another Ethereum wallet');
       }
       
-      const provider = new ethers.BrowserProvider(window.ethereum)
-      const accounts = await provider.send('eth_requestAccounts', [])
-      const network = await provider.getNetwork()
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      const network = await provider.getNetwork();
       
-      setAccount(accounts[0])
-      setChainId(Number(network.chainId))
+      setAccount(accounts[0]);
+      setChainId(Number(network.chainId));
       
-      const balance = await provider.getBalance(accounts[0])
-      setBalance(ethers.formatEther(balance))
+      const balance = await provider.getBalance(accounts[0]);
+      setBalance(ethers.formatEther(balance));
       
-      window.ethereum.on('accountsChanged', handleAccountsChanged)
-      window.ethereum.on('chainChanged', handleChainChanged)
-    } catch (err) {
-      console.error('Error connecting wallet:', err)
-      setError(err.message || 'Failed to connect wallet')
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+    } catch (err: any) {
+      console.error('Error connecting wallet:', err);
+      setError(err.message || 'Failed to connect wallet');
     } finally {
-      setIsConnecting(false)
+      setIsConnecting(false);
     }
-  }
+  };
 
-  // Disconnect wallet function
-  const disconnectWallet = () => {
-    setAccount(null)
-    setBalance('')
-    setChainId(null)
-    setNetworkName('')
+  const disconnectWallet = (): void => {
+    setAccount(null);
+    setBalance('');
+    setChainId(null);
+    setNetworkName('');
     
     if (typeof window !== 'undefined' && window.ethereum) {
-      window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
-      window.ethereum.removeListener('chainChanged', handleChainChanged)
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum.removeListener('chainChanged', handleChainChanged);
     }
-  }
+  };
 
-  // Handle account changes
-  const handleAccountsChanged = (accounts) => {
+  const handleAccountsChanged = (accounts: string[]): void => {
     if (accounts.length === 0) {
-      disconnectWallet()
+      disconnectWallet();
     } else {
-      setAccount(accounts[0])
-      updateBalance(accounts[0])
+      setAccount(accounts[0]);
+      updateBalance(accounts[0]);
     }
-  }
+  };
 
-  // Handle chain changes
-  const handleChainChanged = (chainIdHex) => {
-    setChainId(Number(chainIdHex))
+  const handleChainChanged = (chainIdHex: string): void => {
+    setChainId(Number(chainIdHex));
     if (account) {
-      updateBalance(account)
+      updateBalance(account);
     }
-  }
+  };
 
-  // Update balance helper
-  const updateBalance = async (address) => {
+  const updateBalance = async (address: string): Promise<void> => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        const balance = await provider.getBalance(address)
-        setBalance(ethers.formatEther(balance))
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const balance = await provider.getBalance(address);
+        setBalance(ethers.formatEther(balance));
       } catch (err) {
-        console.error('Error updating balance:', err)
+        console.error('Error updating balance:', err);
       }
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -153,5 +159,5 @@ export default function BlockchainApp() {
         )}
       </div>
     </div>
-  )
+  );
 }
